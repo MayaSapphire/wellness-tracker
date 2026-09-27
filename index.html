@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wellness Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div id="topBar">
+    <h1>Wellness Tracker</h1>
+    <button id="editModeBtn" onclick="switchToEditMode()">Edit Mode</button>
+    <button id="viewModeBtn" onclick="switchToViewMode()">View Mode</button>
+    <button id="settingsModeBtn" onclick="switchToSettingsMode()">Settings Mode</button>
+    <button id="aboutBtn" onclick="showAboutModal()">About</button>
+  </div>
+  
+  <div id="editMode">
+    <!-- Edit mode content to be inserted dynamically -->
+  </div>
+
+  <div id="viewMode">
+    <!-- View mode content to be inserted dynamically -->
+  </div>
+  
+  <div id="settingsMode">
+    <!-- Settings mode content to be inserted dynamically -->
+  </div>
+
+  <dialog id="aboutModal">
+    <h2>About Wellness Tracker</h2>
+    <p>
+      This is a simple wellness tracking application. It's free, open-source, and has no ads. 
+      All data is stored locally on your device.
+    </p>
+    <button onclick="closeAboutModal()">Close</button>
+    
+  </dialog>
+</body>
+</html>
