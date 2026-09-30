@@ -24,3 +24,7 @@ body {
   backdrop-filter: blur(10px);
   color:#f8f8f8
 }
+
+input[type="number"] {
+  width: 50px;
+}

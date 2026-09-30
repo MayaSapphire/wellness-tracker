@@ -4,6 +4,17 @@ let settingsMode = document.getElementById('settingsMode');
 let currentMode = '';
 let selectedDate = new Date();
 
+function formatDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateKey(dateKey) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
 
 const entryTypeUserFriendlyNames = {
   'shortText': 'Short Text',
@@ -13,6 +24,30 @@ const entryTypeUserFriendlyNames = {
   'decimal': 'Decimal'
 }
 
+function formatCellValue(entryName, rawValue) {
+  const latestEntries = JSON.parse(localStorage.getItem("latestEntries")) || [];
+  const entry = latestEntries.find(item => item.name === entryName);
+
+  if (!entry) {
+    return rawValue ?? "";
+  }
+
+  if (entry.type === "boolean") {
+    if (rawValue === "" || rawValue === null || rawValue === undefined) {
+      return "";
+    }
+    return rawValue === true ? "Yes" : "No";
+  }
+
+  if (entry.type === "decimal") {
+    if (rawValue === "" || rawValue === null || rawValue === undefined) {
+      return "";
+    }
+    return `${Number(rawValue)}%`;
+  }
+
+  return rawValue ?? "";
+}
 
 class Day {
   constructor(date, entries) {
@@ -50,8 +85,8 @@ function switchToEditMode() {
   // show edit mode 
   // show current date
   let dateDisplay = document.createElement("h2");
-  let selectedDateString = selectedDate.toDateString();
-  dateDisplay.innerHTML = selectedDateString;
+  let selectedDateString = formatDateKey(selectedDate);
+  dateDisplay.innerHTML = selectedDate.toDateString();
   editMode.appendChild(dateDisplay)
 
   // show forward+back buttons
@@ -68,6 +103,15 @@ function switchToEditMode() {
   editMode.appendChild(document.createElement("br"));
 
   const latestEntries = JSON.parse(localStorage.getItem('latestEntries')) || [];
+  const savedEntries = JSON.parse(localStorage.getItem(formatDateKey(selectedDate)) || "{}");
+  const inputsByEntryName = {};
+
+  if (latestEntries.length === 0) {
+    const noEntriesMessage = document.createElement("p");
+    noEntriesMessage.innerHTML = "No entries have been created yet. Please use Settings Mode to create entries.";
+    editMode.appendChild(noEntriesMessage);
+    return;
+  }
 
   for (let i=0; i<latestEntries.length; i++) {
     editMode.appendChild(document.createElement("br"));
@@ -93,6 +137,7 @@ function switchToEditMode() {
         inputElement = document.createElement("input");
         inputElement.type = "number";
         inputElement.step = "1";
+        inputElement.width = "50";
         break;
       case 'decimal':
         inputElement = document.createElement("input");
@@ -105,38 +150,38 @@ function switchToEditMode() {
         alert("An error has occurred. This is likely the result of a bug.\nInvalid type in switch statement: " + entry.type)
     }
 
-    const dateKey = selectedDate.toDateString();
-    const savedEntries = JSON.parse(localStorage.getItem(dateKey) || "{}");
-
     if (entry.type === 'boolean') {
       inputElement.checked = savedEntries[entry.name] === true;
-    } else if (entry.type === 'integer' || entry.type === 'decimal') {
-      inputElement.value = savedEntries[entry.name] ?? "";
     } else {
       inputElement.value = savedEntries[entry.name] ?? "";
-}
+    }
 
     inputElement.id = `entry-${entry.name}`;
+    inputsByEntryName[entry.name] = inputElement;
     editMode.appendChild(inputElement);
 
     editMode.appendChild(document.createElement("br"));
-
-
-    const saveBtn = document.createElement("button");
-    saveBtn.innerHTML = "Save";
-    saveBtn.onclick = function() {
-      let value;
-      if (entry.type === 'boolean') {
-        value = inputElement.checked;
-      } else {
-        value = inputElement.value;
-      }
-      editEntry(selectedDateString, entry.name, value);
-    }
-    editMode.appendChild(saveBtn);
-
-    editMode.appendChild(document.createElement("br"));
   }
+
+  const saveBtn = document.createElement("button");
+  saveBtn.innerHTML = "Save";
+  saveBtn.onclick = function() {
+    const dayEntries = {};
+
+    for (const [entryName, inputElement] of Object.entries(inputsByEntryName)) {
+      const entry = latestEntries.find(item => item.name === entryName);
+      if (!entry) continue;
+
+      if (entry.type === 'boolean') {
+        dayEntries[entryName] = inputElement.checked;
+      } else {
+        dayEntries[entryName] = inputElement.value;
+      }
+    }
+
+    localStorage.setItem(formatDateKey(selectedDate), JSON.stringify(dayEntries));
+  }
+  editMode.appendChild(saveBtn);
 
 }
 
@@ -165,6 +210,104 @@ function switchToViewMode() {
   viewMode.replaceChildren();
 
   // show view mode
+
+  const startDateLabel = document.createElement("h3");
+  startDateLabel.innerHTML = "Start Date: ";
+  viewMode.appendChild(startDateLabel);
+
+  const startDateInput = document.createElement("input");
+  startDateInput.type = "date";
+  viewMode.appendChild(startDateInput);
+
+  const endDateLabel = document.createElement("h3");
+  endDateLabel.innerHTML = "End Date: ";
+  viewMode.appendChild(endDateLabel);
+
+  const endDateInput = document.createElement("input");
+  endDateInput.type = "date";
+  viewMode.appendChild(endDateInput);
+
+  viewMode.appendChild(document.createElement("br"));
+
+  const showEntriesBtn = document.createElement("button");
+  showEntriesBtn.innerHTML = "Show Entries";
+  showEntriesBtn.onclick = function() {
+    const startDateValue = startDateInput.value;
+    const endDateValue = endDateInput.value;
+
+    if (!startDateValue || !endDateValue) {
+      alert("Please select both start and end dates.");
+      return;
+    }
+
+    const startDateObj = parseDateKey(startDateValue);
+    const endDateObj = parseDateKey(endDateValue);
+
+    if (startDateObj > endDateObj) {
+      alert("Start date cannot be after end date.");
+      return;
+    }
+
+    const resultsContainer = document.getElementById("resultsContainer");
+    resultsContainer.replaceChildren();
+
+    const latestEntries = JSON.parse(localStorage.getItem("latestEntries")) || [];
+    const columnNames = latestEntries.map(entry => entry.name);
+
+    const table = document.createElement("table");
+    table.style.borderCollapse = "collapse";
+    table.style.width = "100%";
+    table.style.marginTop = "16px";
+
+    const headerRow = document.createElement("tr");
+
+    const dateHeader = document.createElement("th");
+    dateHeader.textContent = "Date";
+    dateHeader.style.border = "1px solid #ccc";
+    dateHeader.style.padding = "8px";
+    headerRow.appendChild(dateHeader);
+
+    columnNames.forEach(name => {
+      const headerCell = document.createElement("th");
+      headerCell.textContent = name;
+      headerCell.style.border = "1px solid #ccc";
+      headerCell.style.padding = "8px";
+      headerRow.appendChild(headerCell);
+    });
+
+    table.appendChild(headerRow);
+
+    let currentDate = new Date(startDateObj);
+    while (currentDate <= endDateObj) {
+      const currentDateString = formatDateKey(currentDate);
+      const entriesForCurrentDate = JSON.parse(localStorage.getItem(currentDateString)) || {};
+      const row = document.createElement("tr");
+
+      const dateCell = document.createElement("td");
+      dateCell.textContent = currentDate.toDateString();
+      dateCell.style.border = "1px solid #ccc";
+      dateCell.style.padding = "8px";
+      row.appendChild(dateCell);
+
+      columnNames.forEach(name => {
+        const cell = document.createElement("td");
+        cell.textContent = formatCellValue(name, entriesForCurrentDate[name]);
+        cell.style.border = "1px solid #ccc";
+        cell.style.padding = "8px";
+        row.appendChild(cell);
+      });
+
+      table.appendChild(row);
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    resultsContainer.appendChild(table);
+  }
+  viewMode.appendChild(showEntriesBtn);
+
+  const resultsContainer = document.createElement("div");
+  resultsContainer.id = "resultsContainer";
+  viewMode.appendChild(resultsContainer);
 
 }
 
