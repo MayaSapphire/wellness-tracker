@@ -15,19 +15,19 @@
     <button id="settingsModeBtn" onclick="switchToSettingsMode()">Settings Mode</button>
     <button id="aboutBtn" onclick="showAboutModal()">About</button>
   </div>
-  
-  <div id="editMode">
-    <!-- Edit mode content to be inserted dynamically -->
-  </div>
+  <div id="content">
+    <div id="editMode">
+      <!-- Edit mode content to be inserted dynamically -->
+    </div>
 
-  <div id="viewMode">
-    <!-- View mode content to be inserted dynamically -->
+    <div id="viewMode">
+      <!-- View mode content to be inserted dynamically -->
+    </div>
+    
+    <div id="settingsMode">
+      <!-- Settings mode content to be inserted dynamically -->
+    </div>
   </div>
-  
-  <div id="settingsMode">
-    <!-- Settings mode content to be inserted dynamically -->
-  </div>
-
   <dialog id="aboutModal">
     <h2>About Wellness Tracker</h2>
     <p>
@@ -35,7 +35,7 @@
       All data is stored locally on your device.
     </p>
     <button onclick="closeAboutModal()">Close</button>
-    
+
   </dialog>
 </body>
 </html>
