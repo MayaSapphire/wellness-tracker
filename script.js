@@ -21,7 +21,7 @@ const entryTypeUserFriendlyNames = {
   'longText': 'Long Text',
   'boolean': 'Yes/No',
   'integer': 'Integer',
-  'decimal': 'Decimal'
+  'slider': 'Sliding Scale'
 }
 
 function formatCellValue(entryName, rawValue) {
@@ -39,7 +39,7 @@ function formatCellValue(entryName, rawValue) {
     return rawValue === true ? "Yes" : "No";
   }
 
-  if (entry.type === "decimal") {
+  if (entry.type === "slider") {
     if (rawValue === "" || rawValue === null || rawValue === undefined) {
       return "";
     }
@@ -49,21 +49,13 @@ function formatCellValue(entryName, rawValue) {
   return rawValue ?? "";
 }
 
-class Day {
-  constructor(date, entries) {
-    this.date = date;
-    this.entries = entries;
-  }
-}
-
 class Entry {
   constructor(name, type, value) {
     this.name = name;
     this.type = type;
-    this.value = value;
 
-    const validTypes = ['shortText', 'longText', 'boolean', 'integer', 'decimal']
-    if (!this.type in validTypes) {
+    const validTypes = ['shortText', 'longText', 'boolean', 'integer', 'slider'];
+    if (!validTypes.includes(this.type)) {
       // raise an error
       alert("An error has occurred. This is likely the result of a bug.\nInvalid type in Entry constructor: " + this.type)
     } 
@@ -85,7 +77,6 @@ function switchToEditMode() {
   // show edit mode 
   // show current date
   let dateDisplay = document.createElement("h2");
-  let selectedDateString = formatDateKey(selectedDate);
   dateDisplay.innerHTML = selectedDate.toDateString();
   editMode.appendChild(dateDisplay)
 
@@ -102,7 +93,9 @@ function switchToEditMode() {
   
   editMode.appendChild(document.createElement("br"));
 
+  // get current settings
   const latestEntries = JSON.parse(localStorage.getItem('latestEntries')) || [];
+  // get current entries for selected date
   const savedEntries = JSON.parse(localStorage.getItem(formatDateKey(selectedDate)) || "{}");
   const inputsByEntryName = {};
 
@@ -139,7 +132,7 @@ function switchToEditMode() {
         inputElement.step = "1";
         inputElement.width = "50";
         break;
-      case 'decimal':
+      case 'slider':
         inputElement = document.createElement("input");
         inputElement.type = "range";
         inputElement.min = "0";
@@ -156,7 +149,6 @@ function switchToEditMode() {
       inputElement.value = savedEntries[entry.name] ?? "";
     }
 
-    inputElement.id = `entry-${entry.name}`;
     inputsByEntryName[entry.name] = inputElement;
     editMode.appendChild(inputElement);
 
@@ -248,6 +240,7 @@ function switchToViewMode() {
       return;
     }
 
+    // clear previous results, if they exist
     const resultsContainer = document.getElementById("resultsContainer");
     resultsContainer.replaceChildren();
 
@@ -255,23 +248,16 @@ function switchToViewMode() {
     const columnNames = latestEntries.map(entry => entry.name);
 
     const table = document.createElement("table");
-    table.style.borderCollapse = "collapse";
-    table.style.width = "100%";
-    table.style.marginTop = "16px";
 
     const headerRow = document.createElement("tr");
 
     const dateHeader = document.createElement("th");
     dateHeader.textContent = "Date";
-    dateHeader.style.border = "1px solid #ccc";
-    dateHeader.style.padding = "8px";
     headerRow.appendChild(dateHeader);
 
     columnNames.forEach(name => {
       const headerCell = document.createElement("th");
       headerCell.textContent = name;
-      headerCell.style.border = "1px solid #ccc";
-      headerCell.style.padding = "8px";
       headerRow.appendChild(headerCell);
     });
 
@@ -285,15 +271,11 @@ function switchToViewMode() {
 
       const dateCell = document.createElement("td");
       dateCell.textContent = currentDate.toDateString();
-      dateCell.style.border = "1px solid #ccc";
-      dateCell.style.padding = "8px";
       row.appendChild(dateCell);
 
       columnNames.forEach(name => {
         const cell = document.createElement("td");
         cell.textContent = formatCellValue(name, entriesForCurrentDate[name]);
-        cell.style.border = "1px solid #ccc";
-        cell.style.padding = "8px";
         row.appendChild(cell);
       });
 
@@ -372,7 +354,7 @@ function switchToSettingsMode() {
     settingsMode.appendChild(document.createElement("br"));
   }
 
-  // create add new entry name entry
+  // add new entry
   const addNewEntryLabel = document.createElement("h3");
   addNewEntryLabel.innerHTML = "Create New Entry";
   settingsMode.appendChild(addNewEntryLabel);
@@ -416,7 +398,7 @@ function switchToSettingsMode() {
   dropdownMenu.appendChild(shortTextOption);
 
   const slidingScaleOption = document.createElement("option");
-  slidingScaleOption.value = "decimal";
+  slidingScaleOption.value = "slider";
   slidingScaleOption.text = "Sliding Scale";
   dropdownMenu.appendChild(slidingScaleOption);
 
@@ -449,7 +431,7 @@ function switchToSettingsMode() {
 
 function makeNewEntry(name, type) {
   // create a new Entry object
-  const newEntry = new Entry(name, type, null);
+  const newEntry = new Entry(name, type);
 
   // save the new entry to localStorage
   let entries = JSON.parse(localStorage.getItem('latestEntries')) || [];
@@ -457,21 +439,9 @@ function makeNewEntry(name, type) {
   localStorage.setItem('latestEntries', JSON.stringify(entries));
 }
 
-function editEntry(date, entry, value) {
-  const savedEntries = JSON.parse(localStorage.getItem(date)) || {};
-  savedEntries[entry] = value;
-  localStorage.setItem(date, JSON.stringify(savedEntries));
-}
-
-function getEntries(date) {
-  return JSON.parse(localStorage.getItem(date)) || {};
-}
 
 function showAboutModal() {
   const modal = document.getElementById('aboutModal');
-  const closeBtn = document.getElementById('closeModalBtn');
-
-  // Open the modal
   modal.showModal(); 
 }
 
