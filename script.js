@@ -77,17 +77,17 @@ function switchToEditMode() {
   // show edit mode 
   // show current date
   let dateDisplay = document.createElement("h2");
-  dateDisplay.innerHTML = selectedDate.toDateString();
+  dateDisplay.textContent = selectedDate.toDateString();
   editMode.appendChild(dateDisplay)
 
   // show forward+back buttons
   let previousDayBtn = document.createElement("button");
-  previousDayBtn.innerHTML = "Previous Day";
+  previousDayBtn.textContent = "Previous Day";
   previousDayBtn.onclick = selectPreviousDate;
   editMode.appendChild(previousDayBtn);
 
   let nextDayBtn = document.createElement("button");
-  nextDayBtn.innerHTML = "Next Day"
+  nextDayBtn.textContent = "Next Day"
   nextDayBtn.onclick = selectNextDate;
   editMode.appendChild(nextDayBtn);
   
@@ -101,7 +101,7 @@ function switchToEditMode() {
 
   if (latestEntries.length === 0) {
     const noEntriesMessage = document.createElement("p");
-    noEntriesMessage.innerHTML = "No entries have been created yet. Please use Settings Mode to create entries.";
+    noEntriesMessage.textContent = "No entries have been created yet. Please use Settings Mode to create entries.";
     editMode.appendChild(noEntriesMessage);
     return;
   }
@@ -110,7 +110,7 @@ function switchToEditMode() {
     editMode.appendChild(document.createElement("br"));
     const entry = latestEntries[i];
     const entryLabel = document.createElement("label");
-    entryLabel.innerHTML = `${entry.name}: `;
+    entryLabel.textContent = `${entry.name}: `;
     editMode.appendChild(entryLabel);
 
     let inputElement;
@@ -156,7 +156,7 @@ function switchToEditMode() {
   }
 
   const saveBtn = document.createElement("button");
-  saveBtn.innerHTML = "Save";
+  saveBtn.textContent = "Save";
   saveBtn.onclick = function() {
     const dayEntries = {};
 
@@ -175,6 +175,14 @@ function switchToEditMode() {
   }
   editMode.appendChild(saveBtn);
 
+  clearBtn = document.createElement("button");
+  clearBtn.textContent = "Clear";
+  clearBtn.onclick = function() {
+    localStorage.removeItem(formatDateKey(selectedDate));
+    currentMode = '';
+    switchToEditMode();
+  }
+  editMode.appendChild(clearBtn);
 }
 
 function selectPreviousDate() {
@@ -204,7 +212,7 @@ function switchToViewMode() {
   // show view mode
 
   const startDateLabel = document.createElement("h3");
-  startDateLabel.innerHTML = "Start Date: ";
+  startDateLabel.textContent = "Start Date: ";
   viewMode.appendChild(startDateLabel);
 
   const startDateInput = document.createElement("input");
@@ -212,7 +220,7 @@ function switchToViewMode() {
   viewMode.appendChild(startDateInput);
 
   const endDateLabel = document.createElement("h3");
-  endDateLabel.innerHTML = "End Date: ";
+  endDateLabel.textContent = "End Date: ";
   viewMode.appendChild(endDateLabel);
 
   const endDateInput = document.createElement("input");
@@ -222,7 +230,7 @@ function switchToViewMode() {
   viewMode.appendChild(document.createElement("br"));
 
   const showEntriesBtn = document.createElement("button");
-  showEntriesBtn.innerHTML = "Show Entries";
+  showEntriesBtn.textContent = "Show Entries";
   showEntriesBtn.onclick = function() {
     const startDateValue = startDateInput.value;
     const endDateValue = endDateInput.value;
@@ -311,10 +319,10 @@ function switchToSettingsMode() {
   for (let i = 0; i < latestEntries.length; i++) {
     const entry = latestEntries[i];
     const entryElement = document.createElement("p");
-    entryElement.innerHTML = `${entry.name}: ${entryTypeUserFriendlyNames[entry.type]}`;
+    entryElement.textContent = `${entry.name}: ${entryTypeUserFriendlyNames[entry.type]}`;
     settingsMode.appendChild(entryElement);
     const moveUpBtn = document.createElement("button");
-    moveUpBtn.innerHTML = "Move Up";
+    moveUpBtn.textContent = "Move Up";
     moveUpBtn.onclick = function() {
       if (i > 0) {
         const temp = latestEntries[i - 1];
@@ -328,7 +336,7 @@ function switchToSettingsMode() {
     settingsMode.appendChild(moveUpBtn);
 
     const moveDownBtn = document.createElement("button");
-    moveDownBtn.innerHTML = "Move Down";
+    moveDownBtn.textContent = "Move Down";
     moveDownBtn.onclick = function() {
       if (i < latestEntries.length - 1) {
         const temp = latestEntries[i + 1];
@@ -342,7 +350,7 @@ function switchToSettingsMode() {
     settingsMode.appendChild(moveDownBtn);
 
     const deleteBtn = document.createElement("button");
-    deleteBtn.innerHTML = "Delete";
+    deleteBtn.textContent = "Delete";
     deleteBtn.onclick = function() {
       latestEntries.splice(i, 1);
       localStorage.setItem('latestEntries', JSON.stringify(latestEntries));
@@ -356,11 +364,11 @@ function switchToSettingsMode() {
 
   // add new entry
   const addNewEntryLabel = document.createElement("h3");
-  addNewEntryLabel.innerHTML = "Create New Entry";
+  addNewEntryLabel.textContent = "Create New Entry";
   settingsMode.appendChild(addNewEntryLabel);
 
   const nameLabel = document.createElement("label");
-  nameLabel.innerHTML = "Entry Name: ";
+  nameLabel.textContent = "Entry Name: ";
   settingsMode.appendChild(nameLabel);
   const nameInput = document.createElement("input");
   nameInput.type = "text";
@@ -372,7 +380,7 @@ function switchToSettingsMode() {
 
   // create add new entry list
   const label = document.createElement("label");
-  label.innerHTML = "Entry Type: ";
+  label.textContent = "Entry Type: ";
   settingsMode.appendChild(label);
 
   const dropdownMenu = document.createElement("select");
@@ -407,7 +415,7 @@ function switchToSettingsMode() {
   settingsMode.appendChild(document.createElement("br"));
 
   const addEntryBtn = document.createElement("button");
-  addEntryBtn.innerHTML = "Add Entry";
+  addEntryBtn.textContent = "Add Entry";
   addEntryBtn.onclick = function() {
     const entryName = nameInput.value;
     const entryType = dropdownMenu.value;
@@ -450,5 +458,12 @@ function closeAboutModal() {
   modal.close()
 }
 
+function clearAllData() {
+  if (confirm("Are you sure you want to clear all data? This action cannot be undone.")) {
+    localStorage.clear();
+    currentMode = '';
+    switchToEditMode();
+  }
+}
 
 switchToEditMode()
