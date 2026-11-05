@@ -178,6 +178,9 @@ function switchToEditMode() {
   clearBtn = document.createElement("button");
   clearBtn.textContent = "Clear";
   clearBtn.onclick = function() {
+    if (!confirm("Are you sure you want to clear all entries for this date? This action cannot be undone.")) {
+      return;
+    }
     localStorage.removeItem(formatDateKey(selectedDate));
     currentMode = '';
     switchToEditMode();
@@ -348,6 +351,19 @@ function switchToSettingsMode() {
       }
     }
     settingsMode.appendChild(moveDownBtn);
+
+    const renameBtn = document.createElement("button");
+    renameBtn.textContent = "Rename";
+    renameBtn.onclick = function() {
+      const newName = prompt("Enter new name for the entry:", entry.name);
+      if (newName && newName.trim() !== "") {
+        latestEntries[i].name = newName.trim();
+        localStorage.setItem('latestEntries', JSON.stringify(latestEntries));
+        currentMode = '';
+        switchToSettingsMode();
+      }
+    }
+    settingsMode.appendChild(renameBtn);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.textContent = "Delete";
