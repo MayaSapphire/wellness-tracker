@@ -103,6 +103,19 @@ function switchToEditMode() {
     const noEntriesMessage = document.createElement("p");
     noEntriesMessage.textContent = "No entries have been created yet. Please use Settings Mode to create entries.";
     editMode.appendChild(noEntriesMessage);
+
+    const createSampleEntriesBtn = document.createElement("button");
+    createSampleEntriesBtn.textContent = "Create Sample Entries";
+    createSampleEntriesBtn.onclick = function() {
+      makeNewEntry("Medication", "boolean");
+      makeNewEntry("Mood", "slider");
+      makeNewEntry("Minutes Exercised", "integer");
+      makeNewEntry("Sleep", "shortText");
+      makeNewEntry("Notes", "longText");
+      currentMode = '';
+      switchToEditMode();
+    };
+    editMode.appendChild(createSampleEntriesBtn);
     return;
   }
 
@@ -438,6 +451,11 @@ function switchToSettingsMode() {
 
     if (entryName.trim() === "") {
       alert("Entry name cannot be empty.");
+      return;
+    }
+
+    if (latestEntries.some(entry => entry.name === entryName)) {
+      alert("An entry with this name already exists.");
       return;
     }
 
