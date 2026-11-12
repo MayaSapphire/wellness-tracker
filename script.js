@@ -101,7 +101,7 @@ function switchToEditMode() {
 
   if (latestEntries.length === 0) {
     const noEntriesMessage = document.createElement("p");
-    noEntriesMessage.textContent = "No entries have been created yet. Please use Settings Mode to create entries.";
+    noEntriesMessage.textContent = "No entries have been created yet. Please use Settings Mode to create entries, or use the 'Create Sample Entries' button.";
     editMode.appendChild(noEntriesMessage);
 
     const createSampleEntriesBtn = document.createElement("button");
