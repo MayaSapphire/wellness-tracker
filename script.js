@@ -311,6 +311,45 @@ function switchToViewMode() {
   }
   viewMode.appendChild(showEntriesBtn);
 
+  viewMode.appendChild(document.createElement("br"));
+  viewMode.appendChild(document.createElement("br"));
+  
+  showPreviousWeekBtn = document.createElement("button");
+  showPreviousWeekBtn.textContent = "Show Previous Week";
+  showPreviousWeekBtn.onclick = function() {
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+
+    startDateInput.value = formatDateKey(sevenDaysAgo);
+    endDateInput.value = formatDateKey(today);
+
+    showEntriesBtn.click();
+  }
+  viewMode.appendChild(showPreviousWeekBtn);
+
+  showAllDataBtn = document.createElement("button");
+  showAllDataBtn.textContent = "Show All Data";
+  showAllDataBtn.onclick = function() {
+    const earliestDateKey = Object.keys(localStorage)
+      .filter(key => /^\d{4}-\d{2}-\d{2}$/.test(key))
+      .sort()[0];
+
+    if (!earliestDateKey) {
+      alert("No data available.");
+      return;
+    }
+
+    const earliestDate = parseDateKey(earliestDateKey);
+    const today = new Date();
+
+    startDateInput.value = formatDateKey(earliestDate);
+    endDateInput.value = formatDateKey(today);
+
+    showEntriesBtn.click();
+  }
+  viewMode.appendChild(showAllDataBtn);
+
   const resultsContainer = document.createElement("div");
   resultsContainer.id = "resultsContainer";
   viewMode.appendChild(resultsContainer);
